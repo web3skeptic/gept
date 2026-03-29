@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>German Gender Trainer — der/die/das</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f8;
+  --card: #ffffff;
+  --primary: #6366f1;
+  --primary-light: #a5b4fc;
+  --primary-dark: #4338ca;
+  --accent: #8b5cf6;
+  --success: #22c55e;
+  --success-bg: #dcfce7;
+  --error: #ef4444;
+  --error-bg: #fee2e2;
+  --text: #1e1b4b;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --border: #e2e8f0;
+  --shadow: 0 4px 24px rgba(99, 102, 241, 0.10);
+  --shadow-lg: 0 8px 40px rgba(99, 102, 241, 0.15);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --der: #3b82f6;
+  --die: #ec4899;
+  --das: #f59e0b;
+  --der-bg: #dbeafe;
+  --die-bg: #fce7f3;
+  --das-bg: #fef3c7;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 24px 0 16px;
+}
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.header .subtitle {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.stat-chip {
+  flex: 1;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.stat-chip .stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+.stat-chip .stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.stat-chip.streak .stat-value { color: var(--accent); }
+
+/* Phase tabs */
+.phase-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 16px;
+}
+.phase-tab {
+  flex: 1;
+  padding: 8px 4px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  position: relative;
+}
+.phase-tab.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #eef2ff;
+}
+.phase-tab.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.phase-tab .lock-icon {
+  font-size: 0.85rem;
+  display: block;
+  margin-bottom: 2px;
+}
+.phase-tab .phase-progress {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+}
+
+/* Progress bar */
+.progress-container {
+  margin-bottom: 16px;
+}
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.progress-bar {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Phase intro */
+.phase-intro {
+  background: linear-gradient(135deg, #eef2ff, #f5f3ff);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border: 1px solid var(--primary-light);
+}
+.phase-intro .phase-intro-tier {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--primary);
+  background: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.phase-intro .phase-intro-text {
+  font-size: 0.85rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Rule card */
+.rule-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+}
+.rule-card .rule-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.rule-card .rule-text {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+.rule-card .rule-example {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  font-style: italic;
+}
+
+/* Quiz card */
+.quiz-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 32px 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.quiz-card .word-display {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.quiz-card .word-meaning {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+.quiz-card .compound-hint {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+}
+.quiz-card .compound-hint strong {
+  color: var(--text-secondary);
+}
+
+/* Answer buttons */
+.answer-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.answer-btn {
+  flex: 1;
+  max-width: 130px;
+  padding: 14px 8px;
+  border-radius: var(--radius-sm);
+  border: 2.5px solid var(--border);
+  background: var(--card);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  transition: all 0.15s;
+  color: var(--text);
+}
+.answer-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+.answer-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.answer-btn.btn-der { border-color: var(--der-bg); }
+.answer-btn.btn-der:hover:not(:disabled) { background: var(--der-bg); border-color: var(--der); }
+.answer-btn.btn-die { border-color: var(--die-bg); }
+.answer-btn.btn-die:hover:not(:disabled) { background: var(--die-bg); border-color: var(--die); }
+.answer-btn.btn-das { border-color: var(--das-bg); }
+.answer-btn.btn-das:hover:not(:disabled) { background: var(--das-bg); border-color: var(--das); }
+
+.answer-btn.correct {
+  background: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success);
+  transform: scale(1.05);
+}
+.answer-btn.wrong {
+  background: var(--error-bg);
+  border-color: var(--error);
+  color: var(--error);
+  animation: shake 0.4s ease;
+}
+.answer-btn:disabled { cursor: default; opacity: 0.6; }
+.answer-btn.correct:disabled, .answer-btn.wrong:disabled { opacity: 1; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Feedback */
+.feedback {
+  margin-top: 20px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  animation: fadeIn 0.2s ease;
+  text-align: left;
+}
+.feedback.correct {
+  background: var(--success-bg);
+  color: #166534;
+}
+.feedback.wrong {
+  background: var(--error-bg);
+  color: #991b1b;
+}
+.feedback .why-line {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+.feedback .tier-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  margin-right: 4px;
+}
+.feedback.correct .tier-badge {
+  background: #bbf7d0;
+  color: #166534;
+}
+.feedback.wrong .tier-badge {
+  background: #fecaca;
+  color: #991b1b;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Next button */
+.next-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+}
+.next-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+/* Rules mastered list */
+.mastered-list {
+  margin-top: 16px;
+}
+.mastered-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  margin-bottom: 6px;
+  font-size: 0.8rem;
+  border: 1px solid var(--border);
+}
+.mastered-item .check { color: var(--success); font-weight: 700; }
+.mastered-item .pending { color: var(--border); }
+.mastered-item.current { border-color: var(--primary); background: #eef2ff; }
+
+/* Celebration */
+.celebration {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  margin-bottom: 16px;
+  animation: fadeIn 0.5s ease;
+}
+.celebration .emoji { font-size: 3rem; margin-bottom: 12px; }
+.celebration h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  margin-bottom: 8px;
+}
+.celebration p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+/* Reset / settings */
+.footer {
+  text-align: center;
+  padding: 16px 0 32px;
+}
+.reset-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 8px;
+}
+.reset-btn:hover { color: var(--error); }
+
+/* Keyboard hint */
+.keyboard-hint {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  opacity: 0.7;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+  .quiz-card .word-display { font-size: 1.8rem; }
+  .answer-btn { padding: 12px 6px; font-size: 1rem; }
+  .stat-chip .stat-value { font-size: 1.1rem; }
+  .phase-tab { font-size: 0.6rem; padding: 6px 3px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+
+const PHASES = [
+  {
+    id: 'suffix',
+    name: 'Suffixes',
+    icon: '📝',
+    tier: 1,
+    tierLabel: 'Tier 1 — Suffix Rules',
+    intro: 'The most reliable shortcut: the ending of a German noun almost always predicts its gender. These suffix rules cover ~60% of all nouns with very high accuracy. Learn them first — they\'re your bread and butter.',
+    rules: [
+      // MASCULINE
+      { id:'m-er', gender:'der', suffix:'-er', desc:'Words ending in -er (agent nouns, tools) → der', example:'der Lehrer, der Computer',
+        why: 'Ends in -er → masculine',
+        words:[
+          {word:'Lehrer',meaning:'teacher'},{word:'Fahrer',meaning:'driver'},{word:'Arbeiter',meaning:'worker'},
+          {word:'Spieler',meaning:'player'},{word:'Computer',meaning:'computer'},{word:'Drucker',meaning:'printer'}
+        ]},
+      { id:'m-ling', gender:'der', suffix:'-ling', desc:'Words ending in -ling → der', example:'der Frühling, der Schmetterling',
+        why: 'Ends in -ling → masculine',
+        words:[
+          {word:'Frühling',meaning:'spring'},{word:'Lehrling',meaning:'apprentice'},
+          {word:'Schmetterling',meaning:'butterfly'},{word:'Liebling',meaning:'darling/favorite'}
+        ]},
+      { id:'m-ig', gender:'der', suffix:'-ig / -ich', desc:'Words ending in -ig or -ich → der', example:'der König, der Teppich',
+        why: 'Ends in -ig/-ich → masculine',
+        words:[
+          {word:'König',meaning:'king'},{word:'Honig',meaning:'honey'},
+          {word:'Teppich',meaning:'carpet'},{word:'Essig',meaning:'vinegar'}
+        ]},
+      { id:'m-ismus', gender:'der', suffix:'-ismus', desc:'Words ending in -ismus → der', example:'der Kapitalismus, der Tourismus',
+        why: 'Ends in -ismus → masculine',
+        words:[
+          {word:'Kapitalismus',meaning:'capitalism'},{word:'Tourismus',meaning:'tourism'},
+          {word:'Realismus',meaning:'realism'}
+        ]},
+      { id:'m-ist', gender:'der', suffix:'-ist', desc:'Words ending in -ist → der', example:'der Tourist, der Pianist',
+        why: 'Ends in -ist → masculine',
+        words:[
+          {word:'Tourist',meaning:'tourist'},{word:'Journalist',meaning:'journalist'},
+          {word:'Pianist',meaning:'pianist'}
+        ]},
+      { id:'m-or', gender:'der', suffix:'-or', desc:'Words ending in -or → der', example:'der Motor, der Doktor',
+        why: 'Ends in -or → masculine',
+        words:[
+          {word:'Motor',meaning:'motor/engine'},{word:'Doktor',meaning:'doctor'},
+          {word:'Professor',meaning:'professor'}
+        ]},
+      // FEMININE
+      { id:'f-ung', gender:'die', suffix:'-ung', desc:'Words ending in -ung → die (100% reliable!)', example:'die Zeitung, die Wohnung',
+        why: 'Ends in -ung → feminine (no exceptions!)',
+        words:[
+          {word:'Zeitung',meaning:'newspaper'},{word:'Wohnung',meaning:'apartment'},
+          {word:'Meinung',meaning:'opinion'},{word:'Regierung',meaning:'government'},
+          {word:'Übung',meaning:'exercise'},{word:'Rechnung',meaning:'bill/invoice'}
+        ]},
+      { id:'f-heit', gender:'die', suffix:'-heit / -keit', desc:'Words ending in -heit or -keit → die', example:'die Freiheit, die Möglichkeit',
+        why: 'Ends in -heit/-keit → feminine',
+        words:[
+          {word:'Freiheit',meaning:'freedom'},{word:'Schönheit',meaning:'beauty'},
+          {word:'Möglichkeit',meaning:'possibility'},{word:'Freundlichkeit',meaning:'friendliness'}
+        ]},
+      { id:'f-schaft', gender:'die', suffix:'-schaft', desc:'Words ending in -schaft → die', example:'die Freundschaft, die Gesellschaft',
+        why: 'Ends in -schaft → feminine',
+        words:[
+          {word:'Freundschaft',meaning:'friendship'},{word:'Gesellschaft',meaning:'society'},
+          {word:'Wirtschaft',meaning:'economy'},{word:'Mannschaft',meaning:'team'}
+        ]},
+      { id:'f-tion', gender:'die', suffix:'-tion / -sion', desc:'Words ending in -tion or -sion → die', example:'die Nation, die Version',
+        why: 'Ends in -tion/-sion → feminine',
+        words:[
+          {word:'Nation',meaning:'nation'},{word:'Situation',meaning:'situation'},
+          {word:'Version',meaning:'version'}
+        ]},
+      { id:'f-ik', gender:'die', suffix:'-ik', desc:'Words ending in -ik → die', example:'die Musik, die Technik',
+        why: 'Ends in -ik → feminine',
+        words:[
+          {word:'Musik',meaning:'music'},{word:'Physik',meaning:'physics'},
+          {word:'Klinik',meaning:'clinic'},{word:'Technik',meaning:'technology'},
+          {word:'Panik',meaning:'panic'}
+        ]},
+      { id:'f-ie', gender:'die', suffix:'-ie', desc:'Words ending in -ie → die', example:'die Energie, die Familie',
+        why: 'Ends in -ie → feminine',
+        words:[
+          {word:'Energie',meaning:'energy'},{word:'Demokratie',meaning:'democracy'},
+          {word:'Familie',meaning:'family'},{word:'Biologie',meaning:'biology'}
+        ]},
+      { id:'f-enz', gender:'die', suffix:'-enz / -anz', desc:'Words ending in -enz or -anz → die', example:'die Intelligenz, die Toleranz',
+        why: 'Ends in -enz/-anz → feminine',
+        words:[
+          {word:'Intelligenz',meaning:'intelligence'},{word:'Toleranz',meaning:'tolerance'},
+          {word:'Distanz',meaning:'distance'}
+        ]},
+      { id:'f-tur', gender:'die', suffix:'-tur / -ur', desc:'Words ending in -tur or -ur → die', example:'die Natur, die Kultur',
+        why: 'Ends in -tur/-ur → feminine',
+        words:[
+          {word:'Natur',meaning:'nature'},{word:'Kultur',meaning:'culture'},
+          {word:'Literatur',meaning:'literature'},{word:'Temperatur',meaning:'temperature'}
+        ]},
+      { id:'f-erin', gender:'die', suffix:'-erin / -in', desc:'Words ending in -erin or -in (female roles) → die', example:'die Lehrerin, die Ärztin',
+        why: 'Female agent suffix -erin/-in → feminine',
+        words:[
+          {word:'Lehrerin',meaning:'female teacher'},{word:'Ärztin',meaning:'female doctor'},
+          {word:'Spielerin',meaning:'female player'},{word:'Fahrerin',meaning:'female driver'}
+        ]},
+      { id:'f-ei', gender:'die', suffix:'-ei', desc:'Words ending in -ei → die', example:'die Bäckerei, die Bücherei',
+        why: 'Ends in -ei → feminine',
+        words:[
+          {word:'Bäckerei',meaning:'bakery'},{word:'Metzgerei',meaning:'butcher shop'},
+          {word:'Bücherei',meaning:'library'}
+        ]},
+      // NEUTER
+      { id:'n-chen', gender:'das', suffix:'-chen / -lein', desc:'Diminutives ending in -chen or -lein → always das', example:'das Mädchen, das Häuschen',
+        why: 'Diminutive -chen/-lein → always neuter',
+        words:[
+          {word:'Mädchen',meaning:'girl'},{word:'Häuschen',meaning:'little house'},
+          {word:'Männlein',meaning:'little man'},{word:'Büchlein',meaning:'booklet'}
+        ]},
+      { id:'n-um', gender:'das', suffix:'-um', desc:'Words ending in -um → das', example:'das Museum, das Zentrum',
+        why: 'Ends in -um → neuter',
+        words:[
+          {word:'Museum',meaning:'museum'},{word:'Zentrum',meaning:'center'},
+          {word:'Datum',meaning:'date'},{word:'Studium',meaning:'studies/course'}
+        ]},
+      { id:'n-ment', gender:'das', suffix:'-ment', desc:'Words ending in -ment → das', example:'das Experiment, das Dokument',
+        why: 'Ends in -ment → neuter',
+        words:[
+          {word:'Experiment',meaning:'experiment'},{word:'Instrument',meaning:'instrument'},
+          {word:'Parlament',meaning:'parliament'},{word:'Dokument',meaning:'document'}
+        ]},
+      { id:'n-nis', gender:'das', suffix:'-nis', desc:'Words ending in -nis → das', example:'das Ergebnis, das Geheimnis',
+        why: 'Ends in -nis → neuter',
+        words:[
+          {word:'Ergebnis',meaning:'result'},{word:'Geheimnis',meaning:'secret'},
+          {word:'Bedürfnis',meaning:'need'},{word:'Ereignis',meaning:'event'}
+        ]},
+      { id:'n-tum', gender:'das', suffix:'-tum', desc:'Words ending in -tum → das', example:'das Eigentum, das Wachstum',
+        why: 'Ends in -tum → neuter',
+        words:[
+          {word:'Eigentum',meaning:'property'},{word:'Reichtum',meaning:'wealth'},
+          {word:'Wachstum',meaning:'growth'}
+        ]},
+      { id:'n-al', gender:'das', suffix:'-al', desc:'Words ending in -al → das', example:'das Signal, das Material',
+        why: 'Ends in -al → neuter',
+        words:[
+          {word:'Signal',meaning:'signal'},{word:'Material',meaning:'material'},
+          {word:'Mineral',meaning:'mineral'}
+        ]},
+      { id:'n-verb', gender:'das', suffix:'verb as noun', desc:'Verbs used as nouns (infinitives) → das', example:'das Essen, das Trinken',
+        why: 'Nominalized infinitive → neuter',
+        words:[
+          {word:'Essen',meaning:'eating/food'},{word:'Trinken',meaning:'drinking'},
+          {word:'Schlafen',meaning:'sleeping'},{word:'Lesen',meaning:'reading'}
+        ]},
+    ]
+  },
+  {
+    id: 'semantic',
+    name: 'Semantics',
+    icon: '🧠',
+    tier: 2,
+    tierLabel: 'Tier 2 — Semantic Rules',
+    intro: 'When suffixes don\'t help, the meaning category often will. German assigns gender based on what kind of thing a noun refers to — calendar words, natural phenomena, metals, etc. These patterns have deep cultural roots.',
+    rules: [
+      // MASCULINE
+      { id:'s-days', gender:'der', suffix:'days/months/seasons', desc:'Days, months, and seasons → der', example:'der Montag, der Januar, der Sommer',
+        why: 'Calendar time word → masculine',
+        words:[
+          {word:'Montag',meaning:'Monday'},{word:'Dienstag',meaning:'Tuesday'},
+          {word:'Januar',meaning:'January'},{word:'Februar',meaning:'February'},
+          {word:'Sommer',meaning:'summer'},{word:'Winter',meaning:'winter'}
+        ]},
+      { id:'s-weather', gender:'der', suffix:'weather', desc:'Weather phenomena → der', example:'der Regen, der Schnee',
+        why: 'Weather phenomenon → masculine',
+        words:[
+          {word:'Regen',meaning:'rain'},{word:'Schnee',meaning:'snow'},
+          {word:'Wind',meaning:'wind'},{word:'Sturm',meaning:'storm'},
+          {word:'Nebel',meaning:'fog'},{word:'Frost',meaning:'frost'}
+        ]},
+      { id:'s-compass', gender:'der', suffix:'compass', desc:'Compass directions → der', example:'der Norden, der Süden',
+        why: 'Compass direction → masculine',
+        words:[
+          {word:'Norden',meaning:'north'},{word:'Süden',meaning:'south'},
+          {word:'Osten',meaning:'east'},{word:'Westen',meaning:'west'}
+        ]},
+      { id:'s-alcohol', gender:'der', suffix:'alcohol', desc:'Alcoholic drinks → der (exception: das Bier)', example:'der Wein, der Whisky',
+        why: 'Alcoholic drink → masculine',
+        words:[
+          {word:'Wein',meaning:'wine'},{word:'Whisky',meaning:'whisky'},
+          {word:'Rum',meaning:'rum'},{word:'Sekt',meaning:'sparkling wine'}
+        ]},
+      { id:'s-cars', gender:'der', suffix:'car brands', desc:'Car brands → der (der BMW, der Mercedes)', example:'der BMW, der Audi',
+        why: 'Car brand (= der Wagen) → masculine',
+        words:[
+          {word:'BMW',meaning:'BMW (car)'},{word:'Mercedes',meaning:'Mercedes (car)'},
+          {word:'Audi',meaning:'Audi (car)'},{word:'Porsche',meaning:'Porsche (car)'}
+        ]},
+      // FEMININE
+      { id:'s-numbers', gender:'die', suffix:'numbers as nouns', desc:'Numbers used as nouns → die', example:'die Eins, die Zwei',
+        why: 'Number as noun (= die Zahl) → feminine',
+        words:[
+          {word:'Eins',meaning:'(the number) one'},{word:'Zwei',meaning:'(the number) two'},
+          {word:'Drei',meaning:'(the number) three'},{word:'Vier',meaning:'(the number) four'}
+        ]},
+      { id:'s-trees', gender:'die', suffix:'trees', desc:'Tree species → die', example:'die Eiche, die Birke',
+        why: 'Tree species → feminine',
+        words:[
+          {word:'Eiche',meaning:'oak'},{word:'Birke',meaning:'birch'},
+          {word:'Tanne',meaning:'fir'},{word:'Buche',meaning:'beech'},
+          {word:'Fichte',meaning:'spruce'}
+        ]},
+      { id:'s-flowers', gender:'die', suffix:'flowers', desc:'Flowers → die', example:'die Rose, die Tulpe',
+        why: 'Flower → feminine',
+        words:[
+          {word:'Rose',meaning:'rose'},{word:'Tulpe',meaning:'tulip'},
+          {word:'Nelke',meaning:'carnation'},{word:'Orchidee',meaning:'orchid'}
+        ]},
+      { id:'s-fruits', gender:'die', suffix:'fruits', desc:'Most fruits → die (exception: der Apfel)', example:'die Birne, die Kirsche',
+        why: 'Fruit → feminine',
+        words:[
+          {word:'Birne',meaning:'pear'},{word:'Pflaume',meaning:'plum'},
+          {word:'Kirsche',meaning:'cherry'},{word:'Traube',meaning:'grape'}
+        ]},
+      // NEUTER
+      { id:'s-young', gender:'das', suffix:'young animals', desc:'Young animals → das', example:'das Lamm, das Kalb',
+        why: 'Young animal → neuter',
+        words:[
+          {word:'Lamm',meaning:'lamb'},{word:'Kalb',meaning:'calf'},
+          {word:'Küken',meaning:'chick'},{word:'Fohlen',meaning:'foal'},
+          {word:'Ferkel',meaning:'piglet'}
+        ]},
+      { id:'s-metals', gender:'das', suffix:'metals/elements', desc:'Metals and chemical elements → das', example:'das Gold, das Silber',
+        why: 'Metal / chemical element → neuter',
+        words:[
+          {word:'Eisen',meaning:'iron'},{word:'Gold',meaning:'gold'},
+          {word:'Silber',meaning:'silver'},{word:'Kupfer',meaning:'copper'},
+          {word:'Aluminium',meaning:'aluminium'}
+        ]},
+      { id:'s-units', gender:'das', suffix:'units', desc:'Scientific units → das', example:'das Meter, das Kilo',
+        why: 'Scientific unit → neuter',
+        words:[
+          {word:'Meter',meaning:'meter'},{word:'Kilo',meaning:'kilogram'},
+          {word:'Watt',meaning:'watt'},{word:'Volt',meaning:'volt'}
+        ]},
+      { id:'s-colors', gender:'das', suffix:'colors as nouns', desc:'Colors used as nouns → das', example:'das Blau, das Rot',
+        why: 'Color as noun → neuter',
+        words:[
+          {word:'Blau',meaning:'(the color) blue'},{word:'Rot',meaning:'(the color) red'},
+          {word:'Grün',meaning:'(the color) green'},{word:'Gelb',meaning:'(the color) yellow'}
+        ]},
+      { id:'s-letters', gender:'das', suffix:'letters', desc:'Letters of the alphabet → das', example:'das A, das B',
+        why: 'Letter of alphabet → neuter',
+        words:[
+          {word:'A',meaning:'letter A'},{word:'B',meaning:'letter B'},
+          {word:'Z',meaning:'letter Z'},{word:'M',meaning:'letter M'}
+        ]},
+      { id:'s-languages', gender:'das', suffix:'languages', desc:'Languages → das', example:'das Deutsch, das Englisch',
+        why: 'Language name → neuter',
+        words:[
+          {word:'Deutsch',meaning:'German'},{word:'Englisch',meaning:'English'},
+          {word:'Französisch',meaning:'French'},{word:'Spanisch',meaning:'Spanish'}
+        ]},
+    ]
+  },
+  {
+    id: 'etymology',
+    name: 'Etymology',
+    icon: '📚',
+    tier: 3,
+    tierLabel: 'Tier 3 — Etymology Rules',
+    intro: 'The source language of a loanword often predicts its German gender. English tech words → neuter. Latin -um → neuter. French -eur agents → masculine. Even unfamiliar loanwords become guessable once you know the source pattern.',
+    rules: [
+      // MASCULINE
+      { id:'e-greek-m', gender:'der', suffix:'Greek/Latin -us/-os', desc:'Greek/Latin loanwords ending in -us, -os → der', example:'der Rhythmus, der Kosmos',
+        why: 'Greek/Latin ending -us/-os → masculine',
+        words:[
+          {word:'Rhythmus',meaning:'rhythm'},{word:'Kosmos',meaning:'cosmos'},
+          {word:'Zyklus',meaning:'cycle'},{word:'Fokus',meaning:'focus'}
+        ]},
+      // FEMININE
+      { id:'e-french', gender:'die', suffix:'French -age/-ette', desc:'French loanwords ending in -age, -ette → die', example:'die Garage, die Tablette',
+        why: 'French loanword ending → feminine',
+        words:[
+          {word:'Garage',meaning:'garage'},{word:'Tablette',meaning:'tablet/pill'},
+          {word:'Etage',meaning:'floor/story'},{word:'Marionette',meaning:'marionette'}
+        ]},
+      { id:'e-greek-f', gender:'die', suffix:'Greek -sis/-se', desc:'Greek loanwords ending in -sis or -se → die', example:'die Basis, die Analyse',
+        why: 'Greek loanword ending -sis/-se → feminine',
+        words:[
+          {word:'Basis',meaning:'basis'},{word:'Praxis',meaning:'practice'},
+          {word:'Analyse',meaning:'analysis'},{word:'Diagnose',meaning:'diagnosis'}
+        ]},
+      { id:'e-latin-f', gender:'die', suffix:'Latin -ität', desc:'Latin loanwords ending in -ität → die', example:'die Qualität, die Universität',
+        why: 'Latin ending -ität → feminine',
+        words:[
+          {word:'Qualität',meaning:'quality'},{word:'Universität',meaning:'university'},
+          {word:'Aktivität',meaning:'activity'},{word:'Realität',meaning:'reality'}
+        ]},
+      { id:'e-italian', gender:'die', suffix:'Italian loans', desc:'Italian food loanwords → often die', example:'die Pizza, die Pasta',
+        why: 'Italian loanword (fem. -a ending) → feminine',
+        words:[
+          {word:'Pizza',meaning:'pizza'},{word:'Pasta',meaning:'pasta'},
+          {word:'Salami',meaning:'salami'},{word:'Paprika',meaning:'pepper/paprika'}
+        ]},
+      // NEUTER
+      { id:'e-english', gender:'das', suffix:'English tech loans', desc:'English loanwords for tech/concepts → das', example:'das Smartphone, das Internet',
+        why: 'English tech/concept loanword → neuter',
+        words:[
+          {word:'Smartphone',meaning:'smartphone'},{word:'Internet',meaning:'internet'},
+          {word:'Meeting',meaning:'meeting'},{word:'Team',meaning:'team'},
+          {word:'Selfie',meaning:'selfie'}
+        ]},
+      { id:'e-greek-n', gender:'das', suffix:'Greek -ma', desc:'Greek loanwords ending in -ma → das', example:'das Thema, das Drama',
+        why: 'Greek ending -ma → neuter',
+        words:[
+          {word:'Thema',meaning:'topic'},{word:'Drama',meaning:'drama'},
+          {word:'Dilemma',meaning:'dilemma'},{word:'Schema',meaning:'schema'},
+          {word:'Plasma',meaning:'plasma'},{word:'Koma',meaning:'coma'}
+        ]},
+    ]
+  },
+  {
+    id: 'compound',
+    name: 'Compounds',
+    icon: '🔗',
+    tier: 4,
+    tierLabel: 'Tier 4 — Compound Word Rule',
+    intro: 'German loves compound nouns — and they follow one simple rule: the LAST component (the "head noun") determines the gender. So if you know die Tasche, then die Handtasche, die Reisetasche, and die Laptoptasche are all feminine too. This one rule covers unlimited novel words.',
+    rules: [
+      { id:'c-tasche', gender:'die', suffix:'… + Tasche', desc:'die Tasche → any compound ending in -tasche is die', example:'die Handtasche, die Reisetasche',
+        why: 'Head noun is die Tasche → feminine',
+        compoundBase: 'die Tasche (bag)',
+        words:[
+          {word:'Handtasche',meaning:'handbag', compound:'Hand + Tasche'},
+          {word:'Reisetasche',meaning:'travel bag', compound:'Reise + Tasche'},
+          {word:'Laptoptasche',meaning:'laptop bag', compound:'Laptop + Tasche'},
+          {word:'Aktentasche',meaning:'briefcase', compound:'Akten + Tasche'}
+        ]},
+      { id:'c-zug', gender:'der', suffix:'… + Zug', desc:'der Zug → any compound ending in -zug is der', example:'der Schnellzug, der Güterzug',
+        why: 'Head noun is der Zug → masculine',
+        compoundBase: 'der Zug (train)',
+        words:[
+          {word:'Schnellzug',meaning:'express train', compound:'Schnell + Zug'},
+          {word:'Güterzug',meaning:'freight train', compound:'Güter + Zug'},
+          {word:'Personenzug',meaning:'passenger train', compound:'Personen + Zug'},
+          {word:'Nahverkehrszug',meaning:'commuter train', compound:'Nahverkehr + s + Zug'}
+        ]},
+      { id:'c-buch', gender:'das', suffix:'… + Buch', desc:'das Buch → any compound ending in -buch is das', example:'das Lehrbuch, das Taschenbuch',
+        why: 'Head noun is das Buch → neuter',
+        compoundBase: 'das Buch (book)',
+        words:[
+          {word:'Lehrbuch',meaning:'textbook', compound:'Lehr + Buch'},
+          {word:'Taschenbuch',meaning:'paperback', compound:'Taschen + Buch'},
+          {word:'Notizbuch',meaning:'notebook', compound:'Notiz + Buch'},
+          {word:'Wörterbuch',meaning:'dictionary', compound:'Wörter + Buch'}
+        ]},
+      { id:'c-strasse', gender:'die', suffix:'… + Straße', desc:'die Straße → any compound ending in -straße is die', example:'die Hauptstraße, die Einbahnstraße',
+        why: 'Head noun is die Straße → feminine',
+        compoundBase: 'die Straße (street)',
+        words:[
+          {word:'Hauptstraße',meaning:'main street', compound:'Haupt + Straße'},
+          {word:'Einbahnstraße',meaning:'one-way street', compound:'Einbahn + Straße'},
+          {word:'Autobahnstraße',meaning:'highway road', compound:'Autobahn + Straße'},
+          {word:'Seitenstraße',meaning:'side street', compound:'Seiten + Straße'}
+        ]},
+      { id:'c-mann', gender:'der', suffix:'… + Mann', desc:'der Mann → any compound ending in -mann is der', example:'der Kaufmann, der Seemann',
+        why: 'Head noun is der Mann → masculine',
+        compoundBase: 'der Mann (man)',
+        words:[
+          {word:'Kaufmann',meaning:'merchant', compound:'Kauf + Mann'},
+          {word:'Seemann',meaning:'sailor', compound:'See + Mann'},
+          {word:'Fachmann',meaning:'expert', compound:'Fach + Mann'},
+          {word:'Feuerwehrmann',meaning:'firefighter', compound:'Feuerwehr + Mann'}
+        ]},
+      { id:'c-haus', gender:'das', suffix:'… + Haus', desc:'das Haus → any compound ending in -haus is das', example:'das Krankenhaus, das Rathaus',
+        why: 'Head noun is das Haus → neuter',
+        compoundBase: 'das Haus (house)',
+        words:[
+          {word:'Krankenhaus',meaning:'hospital', compound:'Kranken + Haus'},
+          {word:'Rathaus',meaning:'city hall', compound:'Rat + Haus'},
+          {word:'Kaufhaus',meaning:'department store', compound:'Kauf + Haus'},
+          {word:'Hochhaus',meaning:'high-rise', compound:'Hoch + Haus'}
+        ]},
+      { id:'c-schule', gender:'die', suffix:'… + Schule', desc:'die Schule → any compound ending in -schule is die', example:'die Grundschule, die Hochschule',
+        why: 'Head noun is die Schule → feminine',
+        compoundBase: 'die Schule (school)',
+        words:[
+          {word:'Grundschule',meaning:'primary school', compound:'Grund + Schule'},
+          {word:'Hochschule',meaning:'university', compound:'Hoch + Schule'},
+          {word:'Fahrschule',meaning:'driving school', compound:'Fahr + Schule'},
+          {word:'Tanzschule',meaning:'dance school', compound:'Tanz + Schule'}
+        ]},
+      { id:'c-werk', gender:'das', suffix:'… + Werk', desc:'das Werk → any compound ending in -werk is das', example:'das Kunstwerk, das Netzwerk',
+        why: 'Head noun is das Werk → neuter',
+        compoundBase: 'das Werk (work/plant)',
+        words:[
+          {word:'Kunstwerk',meaning:'artwork', compound:'Kunst + Werk'},
+          {word:'Netzwerk',meaning:'network', compound:'Netz + Werk'},
+          {word:'Kraftwerk',meaning:'power plant', compound:'Kraft + Werk'},
+          {word:'Handwerk',meaning:'handicraft', compound:'Hand + Werk'}
+        ]},
+      { id:'c-platz', gender:'der', suffix:'… + Platz', desc:'der Platz → any compound ending in -platz is der', example:'der Parkplatz, der Marktplatz',
+        why: 'Head noun is der Platz → masculine',
+        compoundBase: 'der Platz (place/square)',
+        words:[
+          {word:'Parkplatz',meaning:'parking spot', compound:'Park + Platz'},
+          {word:'Marktplatz',meaning:'market square', compound:'Markt + Platz'},
+          {word:'Spielplatz',meaning:'playground', compound:'Spiel + Platz'},
+          {word:'Arbeitsplatz',meaning:'workplace', compound:'Arbeits + Platz'}
+        ]},
+    ]
+  }
+];
+
+const MASTERY_THRESHOLD = 3; // correct answers needed to master a rule
+const NUM_PHASES = PHASES.length;
+
+// ============================================================
+// STATE
+// ============================================================
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('german-gender-trainer-v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Migration: ensure unlockedPhases has correct length
+      while (parsed.unlockedPhases.length < NUM_PHASES) {
+        parsed.unlockedPhases.push(false);
+      }
+      return parsed;
+    }
+  } catch(e) {}
+  // Try migrating from v1
+  try {
+    const v1 = localStorage.getItem('german-gender-trainer');
+    if (v1) {
+      const parsed = JSON.parse(v1);
+      while (parsed.unlockedPhases.length < NUM_PHASES) {
+        parsed.unlockedPhases.push(false);
+      }
+      localStorage.setItem('german-gender-trainer-v2', JSON.stringify(parsed));
+      return parsed;
+    }
+  } catch(e) {}
+  return defaultState();
+}
+
+function defaultState() {
+  const unlocked = new Array(NUM_PHASES).fill(false);
+  unlocked[0] = true;
+  return {
+    currentPhase: 0,
+    unlockedPhases: unlocked,
+    ruleProgress: {},  // ruleId -> { correct: N, total: N, mastered: bool }
+    sessionScore: { correct: 0, total: 0 },
+    streak: 0,
+    bestStreak: 0,
+    celebration: null, // null or phase index just completed
+  };
+}
+
+function saveState(state) {
+  localStorage.setItem('german-gender-trainer-v2', JSON.stringify(state));
+}
+
+let state = loadState();
+// Session score resets each load
+state.sessionScore = { correct: 0, total: 0 };
+state.celebration = null;
+
+// Current quiz state (not persisted)
+let currentRuleIndex = null;
+let currentWordIndex = null;
+let currentWords = [];
+let answered = false;
+let lastRuleId = null; // track when rule changes to reshuffle
+
+// ============================================================
+// HELPERS
+// ============================================================
+
+function getRuleProgress(ruleId) {
+  if (!state.ruleProgress[ruleId]) {
+    state.ruleProgress[ruleId] = { correct: 0, total: 0, mastered: false };
+  }
+  return state.ruleProgress[ruleId];
+}
+
+function getPhaseRules(phaseIdx) {
+  return PHASES[phaseIdx].rules;
+}
+
+function getPhaseProgress(phaseIdx) {
+  if (phaseIdx < 0 || phaseIdx >= NUM_PHASES) return { mastered: 0, total: 0 };
+  const rules = getPhaseRules(phaseIdx);
+  const mastered = rules.filter(r => getRuleProgress(r.id).mastered).length;
+  return { mastered, total: rules.length };
+}
+
+function isPhaseComplete(phaseIdx) {
+  const { mastered, total } = getPhaseProgress(phaseIdx);
+  return mastered === total;
+}
+
+function findCurrentRule(phaseIdx) {
+  const rules = getPhaseRules(phaseIdx);
+  // Find first non-mastered rule
+  for (let i = 0; i < rules.length; i++) {
+    if (!getRuleProgress(rules[i].id).mastered) return i;
+  }
+  return -1; // all mastered
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickWord(rule) {
+  // Reset shuffle when rule changes
+  if (lastRuleId !== rule.id) {
+    currentWords = shuffleArray(rule.words);
+    currentWordIndex = 0;
+    lastRuleId = rule.id;
+  }
+  if (currentWords.length === 0 || currentWordIndex >= currentWords.length) {
+    currentWords = shuffleArray(rule.words);
+    currentWordIndex = 0;
+  }
+  const w = currentWords[currentWordIndex];
+  currentWordIndex++;
+  return w;
+}
+
+// ============================================================
+// RENDER
+// ============================================================
+
+function render() {
+  const app = document.getElementById('app');
+
+  // Check for celebration first
+  if (state.celebration !== null) {
+    renderCelebration(app);
+    return;
+  }
+
+  const phase = PHASES[state.currentPhase];
+  const ruleIdx = findCurrentRule(state.currentPhase);
+
+  if (ruleIdx === -1) {
+    // Phase complete — trigger celebration or move to next
+    if (state.currentPhase < NUM_PHASES - 1) {
+      state.celebration = state.currentPhase;
+      state.unlockedPhases[state.currentPhase + 1] = true;
+      saveState(state);
+      render();
+      return;
+    } else {
+      renderAllComplete(app);
+      return;
+    }
+  }
+
+  currentRuleIndex = ruleIdx;
+  const rule = phase.rules[ruleIdx];
+  const word = pickWord(rule);
+  const progress = getPhaseProgress(state.currentPhase);
+
+  app.innerHTML = `
+    ${renderHeader()}
+    ${renderStats()}
+    ${renderPhaseTabs()}
+    ${renderProgressBar(progress)}
+    ${renderPhaseIntro(phase)}
+    ${renderRuleCard(rule, phase)}
+    ${renderQuizCard(word, rule, phase)}
+    ${renderRulesList(phase.rules)}
+    ${renderFooter()}
+  `;
+
+  bindQuizEvents(word, rule, phase);
+  bindPhaseTabEvents();
+  bindResetEvent();
+}
+
+function renderHeader() {
+  return `
+    <div class="header">
+      <h1>der · die · das</h1>
+      <div class="subtitle">German Gender Trainer</div>
+    </div>
+  `;
+}
+
+function renderStats() {
+  const pct = state.sessionScore.total > 0
+    ? Math.round(state.sessionScore.correct / state.sessionScore.total * 100)
+    : 0;
+  return `
+    <div class="stats-bar">
+      <div class="stat-chip">
+        <div class="stat-value">${state.sessionScore.correct}/${state.sessionScore.total}</div>
+        <div class="stat-label">Session</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-value">${pct}%</div>
+        <div class="stat-label">Accuracy</div>
+      </div>
+      <div class="stat-chip streak">
+        <div class="stat-value">${state.streak}🔥</div>
+        <div class="stat-label">Streak${state.bestStreak > 0 ? ' (best: '+state.bestStreak+')' : ''}</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderStatsInner() {
+  const pct = state.sessionScore.total > 0
+    ? Math.round(state.sessionScore.correct / state.sessionScore.total * 100)
+    : 0;
+  return `
+    <div class="stat-chip">
+      <div class="stat-value">${state.sessionScore.correct}/${state.sessionScore.total}</div>
+      <div class="stat-label">Session</div>
+    </div>
+    <div class="stat-chip">
+      <div class="stat-value">${pct}%</div>
+      <div class="stat-label">Accuracy</div>
+    </div>
+    <div class="stat-chip streak">
+      <div class="stat-value">${state.streak}🔥</div>
+      <div class="stat-label">Streak${state.bestStreak > 0 ? ' (best: '+state.bestStreak+')' : ''}</div>
+    </div>
+  `;
+}
+
+function renderPhaseTabs() {
+  return `
+    <div class="phase-tabs">
+      ${PHASES.map((p, i) => {
+        const unlocked = state.unlockedPhases[i];
+        const active = state.currentPhase === i;
+        const prog = getPhaseProgress(i);
+        return `
+          <button class="phase-tab ${active ? 'active' : ''} ${!unlocked ? 'locked' : ''}"
+                  data-phase="${i}" ${!unlocked ? 'disabled' : ''}>
+            <span class="lock-icon">${unlocked ? p.icon : '🔒'}</span>
+            ${p.name}
+            ${unlocked ? `<span class="phase-progress">${prog.mastered}/${prog.total}</span>` : ''}
+          </button>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderProgressBar(progress) {
+  const pct = progress.total > 0 ? (progress.mastered / progress.total * 100) : 0;
+  return `
+    <div class="progress-container">
+      <div class="progress-label">
+        <span>Phase Progress</span>
+        <span>${progress.mastered} / ${progress.total} rules mastered</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${pct}%"></div>
+      </div>
+    </div>
+  `;
+}
+
+function renderPhaseIntro(phase) {
+  return `
+    <div class="phase-intro">
+      <span class="phase-intro-tier">${phase.tierLabel}</span>
+      <div class="phase-intro-text">${phase.intro}</div>
+    </div>
+  `;
+}
+
+function renderRuleCard(rule, phase) {
+  const genderColors = { der: 'var(--der)', die: 'var(--die)', das: 'var(--das)' };
+  const compoundInfo = rule.compoundBase
+    ? `<div class="rule-example">Base noun: <strong>${rule.compoundBase}</strong></div>`
+    : `<div class="rule-example">${rule.example}</div>`;
+  return `
+    <div class="rule-card">
+      <div class="rule-label">Current Rule · <span style="color:${genderColors[rule.gender]};font-weight:700">${rule.gender}</span></div>
+      <div class="rule-text">${rule.desc}</div>
+      ${compoundInfo}
+    </div>
+  `;
+}
+
+function renderQuizCard(word, rule, phase) {
+  const rp = getRuleProgress(rule.id);
+  const needed = MASTERY_THRESHOLD - rp.correct;
+  const isCompound = phase.id === 'compound' && word.compound;
+  return `
+    <div class="quiz-card" id="quiz-card">
+      <div class="word-display" id="word-display">${word.word}</div>
+      <div class="word-meaning">${word.meaning}</div>
+      ${isCompound ? `<div class="compound-hint">Compound: <strong>${word.compound}</strong> — what gender is the last part?</div>` : ''}
+      <div class="answer-buttons" id="answer-buttons">
+        <button class="answer-btn btn-der" data-answer="der">der</button>
+        <button class="answer-btn btn-die" data-answer="die">die</button>
+        <button class="answer-btn btn-das" data-answer="das">das</button>
+      </div>
+      <div id="feedback-area"></div>
+      <div class="keyboard-hint">Keyboard: 1 = der · 2 = die · 3 = das · Enter/Space = next</div>
+    </div>
+    <div id="next-area" style="display:none">
+      <button class="next-btn" id="next-btn">
+        Next Word →
+      </button>
+      <div style="text-align:center;font-size:0.75rem;color:var(--text-secondary);margin-top:6px" id="mastery-hint">
+        ${needed > 0 ? `${needed} more correct to master this rule` : 'Almost there!'}
+      </div>
+    </div>
+  `;
+}
+
+function renderRulesList(rules) {
+  return `
+    <div class="mastered-list">
+      ${rules.map((r, i) => {
+        const rp = getRuleProgress(r.id);
+        const isCurrent = i === currentRuleIndex;
+        const genderColors = { der: 'var(--der)', die: 'var(--die)', das: 'var(--das)' };
+        return `
+          <div class="mastered-item ${isCurrent ? 'current' : ''}">
+            <span class="${rp.mastered ? 'check' : 'pending'}">${rp.mastered ? '✓' : '○'}</span>
+            <span style="flex:1;font-weight:${isCurrent ? '600' : '400'}">${r.suffix}</span>
+            <span style="color:${genderColors[r.gender]};font-weight:600;font-size:0.75rem">${r.gender}</span>
+            ${rp.mastered ? '' : `<span style="font-size:0.7rem;color:var(--text-secondary)">${rp.correct}/${MASTERY_THRESHOLD}</span>`}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
+function renderFooter() {
+  return `
+    <div class="footer">
+      <button class="reset-btn" id="reset-btn">Reset all progress</button>
+    </div>
+  `;
+}
+
+function renderCelebration(app) {
+  const completedPhase = PHASES[state.celebration];
+  const nextPhaseIdx = state.celebration + 1;
+  const nextPhase = nextPhaseIdx < NUM_PHASES ? PHASES[nextPhaseIdx] : null;
+  app.innerHTML = `
+    ${renderHeader()}
+    <div class="celebration">
+      <div class="emoji">🎉🏆🎉</div>
+      <h2>${completedPhase.name} Complete!</h2>
+      <p>You've mastered all ${completedPhase.rules.length} rules in ${completedPhase.tierLabel}!</p>
+      ${nextPhase ? `
+        <p><strong>${nextPhase.icon} ${nextPhase.tierLabel}</strong> is now unlocked!</p>
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:20px;line-height:1.4">${nextPhase.intro}</p>
+        <button class="next-btn" id="continue-btn">
+          Start ${nextPhase.name} →
+        </button>
+      ` : `
+        <p>You've completed all phases! 🎓</p>
+        <button class="next-btn" id="continue-btn">
+          Continue Practicing
+        </button>
+      `}
+    </div>
+    ${renderFooter()}
+  `;
+
+  document.getElementById('continue-btn').addEventListener('click', () => {
+    if (state.celebration < NUM_PHASES - 1) {
+      state.currentPhase = state.celebration + 1;
+    }
+    state.celebration = null;
+    saveState(state);
+    currentWords = [];
+    lastRuleId = null;
+    render();
+  });
+  bindResetEvent();
+}
+
+function renderAllComplete(app) {
+  const totalRules = PHASES.reduce((s, p) => s + p.rules.length, 0);
+  app.innerHTML = `
+    ${renderHeader()}
+    ${renderStats()}
+    <div class="celebration">
+      <div class="emoji">🎓✨🇩🇪</div>
+      <h2>All Phases Complete!</h2>
+      <p>You've mastered all ${totalRules} gender rules across all 4 tiers. Incredible!</p>
+      <p style="margin-bottom:20px">Keep practicing to maintain your knowledge.</p>
+      <button class="next-btn" id="practice-btn">Free Practice</button>
+    </div>
+    ${renderPhaseTabs()}
+    ${renderFooter()}
+  `;
+
+  document.getElementById('practice-btn').addEventListener('click', () => {
+    // Reset mastery for current phase to allow re-practice
+    const rules = getPhaseRules(state.currentPhase);
+    rules.forEach(r => {
+      state.ruleProgress[r.id] = { correct: 0, total: 0, mastered: false };
+    });
+    saveState(state);
+    currentWords = [];
+    lastRuleId = null;
+    render();
+  });
+  bindPhaseTabEvents();
+  bindResetEvent();
+}
+
+// ============================================================
+// EVENT BINDING
+// ============================================================
+
+function bindQuizEvents(word, rule, phase) {
+  const buttons = document.querySelectorAll('.answer-btn');
+  answered = false;
+
+  function handleAnswer(chosenArticle) {
+    if (answered) return;
+    answered = true;
+
+    const correct = chosenArticle === rule.gender;
+    const rp = getRuleProgress(rule.id);
+
+    // Update state
+    state.sessionScore.total++;
+    rp.total++;
+    if (correct) {
+      state.sessionScore.correct++;
+      rp.correct++;
+      state.streak++;
+      if (state.streak > state.bestStreak) state.bestStreak = state.streak;
+      if (rp.correct >= MASTERY_THRESHOLD) rp.mastered = true;
+    } else {
+      state.streak = 0;
+      // On wrong answer, reduce correct count (min 0) to require re-learning
+      rp.correct = Math.max(0, rp.correct - 1);
+    }
+    saveState(state);
+
+    // Visual feedback on buttons
+    buttons.forEach(btn => {
+      const ans = btn.dataset.answer;
+      btn.disabled = true;
+      if (ans === chosenArticle && correct) btn.classList.add('correct');
+      if (ans === chosenArticle && !correct) btn.classList.add('wrong');
+      if (ans === rule.gender && !correct) btn.classList.add('correct');
+    });
+
+    // Update stats live
+    const statsBar = document.querySelector('.stats-bar');
+    if (statsBar) {
+      statsBar.innerHTML = renderStatsInner();
+    }
+
+    // Build "Why?" explanation
+    const tierLabel = `Tier ${phase.tier}: ${phase.name}`;
+    const whyText = rule.why || rule.desc;
+
+    const feedbackArea = document.getElementById('feedback-area');
+    if (correct) {
+      feedbackArea.innerHTML = `
+        <div class="feedback correct">
+          ✓ Correct! <strong>${rule.gender} ${word.word}</strong>
+          <span class="why-line"><span class="tier-badge">${tierLabel}</span>${whyText}</span>
+        </div>`;
+    } else {
+      feedbackArea.innerHTML = `
+        <div class="feedback wrong">
+          ✗ It's <strong>${rule.gender} ${word.word}</strong>, not ${chosenArticle}.
+          <span class="why-line"><span class="tier-badge">${tierLabel}</span>${whyText}</span>
+        </div>`;
+    }
+
+    document.getElementById('next-area').style.display = 'block';
+
+    // Update mastery hint
+    const rp2 = getRuleProgress(rule.id);
+    const needed = MASTERY_THRESHOLD - rp2.correct;
+    const hint = document.getElementById('mastery-hint');
+    if (hint && rp2.mastered) {
+      hint.innerHTML = `<strong style="color:var(--success)">✓ Rule mastered!</strong>`;
+    } else if (hint) {
+      hint.textContent = `${needed > 0 ? needed : 0} more correct to master this rule`;
+    }
+
+    document.getElementById('next-btn').focus();
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(btn.dataset.answer));
+  });
+
+  document.getElementById('next-btn').addEventListener('click', () => {
+    render();
+  });
+
+  // Keyboard support
+  function keyHandler(e) {
+    if (e.key === '1') handleAnswer('der');
+    if (e.key === '2') handleAnswer('die');
+    if (e.key === '3') handleAnswer('das');
+    if ((e.key === 'Enter' || e.key === ' ') && answered) {
+      e.preventDefault();
+      render();
+    }
+  }
+  document.addEventListener('keydown', keyHandler);
+  window._keyHandler = keyHandler;
+}
+
+function bindPhaseTabEvents() {
+  document.querySelectorAll('.phase-tab:not(.locked)').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const phaseIdx = parseInt(tab.dataset.phase);
+      if (state.unlockedPhases[phaseIdx]) {
+        state.currentPhase = phaseIdx;
+        saveState(state);
+        currentWords = [];
+        lastRuleId = null;
+        render();
+      }
+    });
+  });
+}
+
+function bindResetEvent() {
+  const btn = document.getElementById('reset-btn');
+  if (btn) {
+    btn.addEventListener('click', () => {
+      if (confirm('Reset all progress? This cannot be undone.')) {
+        localStorage.removeItem('german-gender-trainer-v2');
+        state = defaultState();
+        currentWords = [];
+        lastRuleId = null;
+        render();
+      }
+    });
+  }
+}
+
+// Clean up keyboard handlers before re-render
+const origRender = render;
+render = function() {
+  if (window._keyHandler) {
+    document.removeEventListener('keydown', window._keyHandler);
+    window._keyHandler = null;
+  }
+  origRender();
+};
+
+// ============================================================
+// INIT
+// ============================================================
+render();
+</script>
+</body>
+</html>
