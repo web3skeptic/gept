@@ -149,7 +149,7 @@
       <div class="defaults-row">
         <button
           class="btn-defaults"
-          onclick={() => onChange({ unlockWindow: DEFAULT_UNLOCK_WINDOW, unlockThreshold: DEFAULT_UNLOCK_THRESHOLD })}
+          onclick={() => onChange({ ...settings, unlockWindow: DEFAULT_UNLOCK_WINDOW, unlockThreshold: DEFAULT_UNLOCK_THRESHOLD })}
         >Reset to defaults</button>
         <button class="btn-clear" onclick={onClearCache}>Clear progress</button>
       </div>

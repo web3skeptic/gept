@@ -150,6 +150,7 @@
       }, newUnlockKey ? 200 : 180);
     } else {
       stakeCount = 0;
+      history = [];
       wrongGuesses = [...wrongGuesses, article];
       buttonsRef?.flashWrong(article);
       showFeedback = true;
@@ -166,7 +167,8 @@
       const prev = ruleStats[rk] ?? { correct: 0, total: 0 };
       ruleStats = { ...ruleStats, [rk]: { correct: prev.correct, total: prev.total + 1 } };
     }
-    history = [...history, { correct: false }].slice(-HISTORY_SIZE);
+    stakeCount = 0;
+    history = [];
     totalAnswered++;
     persist();
     nextWord();
