@@ -33,6 +33,10 @@
     onChange({ ...settings, showRule: !settings.showRule });
   }
 
+  function toggleDarkMode() {
+    onChange({ ...settings, darkMode: !settings.darkMode });
+  }
+
   function toggleType(type) {
     const next = { ...settings.enabledTypes, [type]: !settings.enabledTypes[type] };
     // prevent disabling all categories
@@ -99,6 +103,23 @@
             class:on={settings.showRule}
             onclick={toggleShowRule}
             aria-label="Toggle rule display"
+          >
+            <span class="toggle-knob"></span>
+          </button>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span class="setting-name">Dark mode</span>
+          <span class="setting-desc">Switch to a dark colour scheme</span>
+        </div>
+        <div class="setting-control">
+          <button
+            class="toggle"
+            class:on={settings.darkMode}
+            onclick={toggleDarkMode}
+            aria-label="Toggle dark mode"
           >
             <span class="toggle-knob"></span>
           </button>

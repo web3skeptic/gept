@@ -18,6 +18,7 @@
     unlockWindow: DEFAULT_UNLOCK_WINDOW,
     unlockThreshold: DEFAULT_UNLOCK_THRESHOLD,
     showRule: true,
+    darkMode: false,
     enabledTypes: { suffix: true, semantic: true, exception: true },
   };
 
@@ -233,6 +234,11 @@
     return () => document.removeEventListener('keydown', onKeydown);
   });
 
+  // ─── Dark mode ───────────────────────────────────────────────────
+  $effect(() => {
+    document.documentElement.setAttribute('data-theme', settings.darkMode ? 'dark' : 'light');
+  });
+
   // ─── Run init on mount ───────────────────────────────────────────
   onMount(init);
 </script>
@@ -334,6 +340,22 @@
     --der-dark: #1d4ed8;
     --die-dark: #db2777;
     --das-dark: #d97706;
+  }
+
+  :global([data-theme="dark"]) {
+    --bg: #0f1117;
+    --card: #1e2130;
+    --text: #e2e8f0;
+    --text-secondary: #94a3b8;
+    --text-tertiary: #64748b;
+    --border: #2d3348;
+    --shadow: 0 4px 24px rgba(0,0,0,.35);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,.5);
+    --success-bg: #14532d;
+    --error-bg: #450a0a;
+    --der-bg: #1e3a5f;
+    --die-bg: #4a1030;
+    --das-bg: #451a03;
   }
 
   :global(*) { margin: 0; padding: 0; box-sizing: border-box; }
