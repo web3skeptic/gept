@@ -197,6 +197,17 @@ export function saveState(state) {
 }
 
 /**
+ * Clear all saved state from localStorage.
+ */
+export function clearState() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch (e) {
+    // localStorage may be unavailable
+  }
+}
+
+/**
  * Load state from localStorage.
  * Returns the saved state object or null.
  */

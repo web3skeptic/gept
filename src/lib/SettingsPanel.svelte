@@ -1,7 +1,7 @@
 <script>
   import { DEFAULT_UNLOCK_WINDOW, DEFAULT_UNLOCK_THRESHOLD } from './gameLogic.js';
 
-  let { visible, settings, ruleGroups, onClose, onChange } = $props();
+  let { visible, settings, ruleGroups, onClose, onChange, onClearCache } = $props();
 
   const CATEGORY_LABELS = {
     suffix: 'Suffix rules',
@@ -130,6 +130,7 @@
           class="btn-defaults"
           onclick={() => onChange({ unlockWindow: DEFAULT_UNLOCK_WINDOW, unlockThreshold: DEFAULT_UNLOCK_THRESHOLD })}
         >Reset to defaults</button>
+        <button class="btn-clear" onclick={onClearCache}>Clear progress</button>
       </div>
     </div>
   </div>
@@ -252,7 +253,8 @@
   .defaults-row {
     margin-top: 20px;
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    gap: 8px;
   }
   .btn-defaults {
     background: none;
@@ -267,6 +269,19 @@
     transition: all 0.15s;
   }
   .btn-defaults:hover { border-color: var(--primary); color: var(--primary); }
+  .btn-clear {
+    background: none;
+    border: 2px solid var(--error);
+    border-radius: var(--radius-sm);
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--error);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-clear:hover { background: var(--error-bg); }
   .section-title {
     font-size: 0.72rem;
     font-weight: 700;

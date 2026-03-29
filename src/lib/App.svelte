@@ -11,7 +11,7 @@
     NOUNS, HISTORY_SIZE, DOTS_SIZE, DEFAULT_UNLOCK_WINDOW, DEFAULT_UNLOCK_THRESHOLD,
     buildRuleGroups, buildUnlockOrder, getActivePool,
     pickNextWord, getInitialUnlockedKeys, checkUnlock,
-    saveState, loadState,
+    saveState, loadState, clearState,
   } from './gameLogic.js';
 
   const DEFAULT_SETTINGS = {
@@ -186,6 +186,19 @@
     persist();
   }
 
+  function handleClearCache() {
+    clearState();
+    unlockedRuleKeys = getInitialUnlockedKeys(unlockOrder, ruleGroups);
+    history = [];
+    totalCorrect = 0;
+    totalAnswered = 0;
+    stakeCount = 0;
+    ruleStats = {};
+    settings = { ...DEFAULT_SETTINGS };
+    showSettings = false;
+    nextWord();
+  }
+
   // ─── Keyboard shortcuts ──────────────────────────────────────────
   $effect(() => {
     function onKeydown(e) {
@@ -289,6 +302,7 @@
   {ruleGroups}
   onClose={handleCloseSettings}
   onChange={handleSettingsChange}
+  onClearCache={handleClearCache}
 />
 
 <style>
