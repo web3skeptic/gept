@@ -77,7 +77,7 @@
   // ─── Word selection ──────────────────────────────────────────────
   function nextWord() {
     const pool = getActivePool(ruleGroups, unlockedRuleKeys, settings.enabledTypes);
-    const noun = pickNextWord(pool, currentNoun?.word, ruleStats);
+    const noun = pickNextWord(pool, currentNoun?.word, ruleStats, unlockedRuleKeys);
     currentNoun = noun;
     wrongGuesses = [];
     showFeedback = false;
@@ -127,16 +127,14 @@
 
       persist();
 
-      // Check for unlock at unlockWindow boundary
+      // Check for unlock after every correct answer (once 15 items are in history)
       let newUnlockKey = null;
-      if (stakeCount > 0 && stakeCount % settings.unlockWindow === 0) {
-        newUnlockKey = checkUnlock(history, unlockedRuleKeys, unlockOrder, settings.unlockWindow, settings.unlockThreshold);
-        if (newUnlockKey) {
-          unlockedRuleKeys = [...unlockedRuleKeys, newUnlockKey];
-          stakeCount = 0;
-          history = [];
-          persist();
-        }
+      newUnlockKey = checkUnlock(history, unlockedRuleKeys, unlockOrder, settings.unlockWindow, settings.unlockThreshold);
+      if (newUnlockKey) {
+        unlockedRuleKeys = [...unlockedRuleKeys, newUnlockKey];
+        stakeCount = 0;
+        history = [];
+        persist();
       }
 
       setTimeout(() => {

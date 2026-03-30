@@ -94,11 +94,11 @@ export function getActivePool(ruleGroups, unlockedRuleKeys, enabledTypes = null)
 }
 
 /**
- * Pick a noun from the pool, weighted toward rules with worse accuracy.
- * Rules with no records are treated as 0% error (lowest priority).
+ * Pick a noun from the pool, weighted toward rules with worse accuracy
+ * and toward more recently unlocked rules.
  * Avoids repeating the current word when possible.
  */
-export function pickNextWord(pool, currentWord, ruleStats = {}) {
+export function pickNextWord(pool, currentWord, ruleStats = {}, unlockedRuleKeys = []) {
   if (pool.length === 0) return null;
 
   // Group nouns by rule key
@@ -110,14 +110,18 @@ export function pickNextWord(pool, currentWord, ruleStats = {}) {
   });
 
   const ruleKeys = Object.keys(byRule);
+  const n = unlockedRuleKeys.length;
 
-  // Weight = 1 (baseline) + errorRate * 2 (boost for struggling rules)
-  // No records → errorRate = 0 → weight = 1
+  // Weight = 1 (baseline)
+  //        + errorRate * 2   (boost for struggling rules)
+  //        + recencyBoost    (boost for recently unlocked rules, max 2)
+  // No records → errorRate = 0. Oldest unlocked rule → recencyBoost = 0.
   const weights = ruleKeys.map(rk => {
     const s = ruleStats[rk];
-    if (!s || s.total === 0) return 1.0;
-    const errorRate = 1 - s.correct / s.total;
-    return 1.0 + errorRate * 2;
+    const errorRate = (!s || s.total === 0) ? 0 : 1 - s.correct / s.total;
+    const idx = unlockedRuleKeys.indexOf(rk);
+    const recencyBoost = (n > 1 && idx >= 0) ? (idx / (n - 1)) * 2 : 0;
+    return 1.0 + errorRate * 2 + recencyBoost;
   });
 
   // Weighted random pick of rule
