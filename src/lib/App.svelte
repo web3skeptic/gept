@@ -11,7 +11,7 @@
     NOUNS, HISTORY_SIZE, DOTS_SIZE, DEFAULT_UNLOCK_WINDOW, DEFAULT_UNLOCK_THRESHOLD,
     buildRuleGroups, buildUnlockOrder, getActivePool,
     pickNextWord, getInitialUnlockedKeys, checkUnlock,
-    saveState, loadState, clearState,
+    saveState, loadState, clearState, isCorrectArticle,
   } from './gameLogic.js';
 
   const DEFAULT_SETTINGS = {
@@ -20,6 +20,7 @@
     showRule: true,
     darkMode: false,
     enabledTypes: { suffix: true, semantic: true, exception: true },
+    enabledRules: null,
   };
 
   // ─── Build rule catalog ──────────────────────────────────────────
@@ -76,7 +77,7 @@
 
   // ─── Word selection ──────────────────────────────────────────────
   function nextWord() {
-    const pool = getActivePool(ruleGroups, unlockedRuleKeys, settings.enabledTypes);
+    const pool = getActivePool(ruleGroups, unlockedRuleKeys, settings.enabledTypes, settings.enabledRules);
     const noun = pickNextWord(pool, currentNoun?.word, ruleStats, unlockedRuleKeys);
     currentNoun = noun;
     wrongGuesses = [];
@@ -104,14 +105,19 @@
     if (wrongGuesses.includes(article)) return;
 
     const noun = currentNoun;
-    const correct = article === noun.article;
+    const correct = isCorrectArticle(article, noun);
 
     if (correct) {
       isTransitioning = true;
       buttonsDisabled = true;
 
-      // Flash the correct button
-      buttonsRef?.flashCorrect(article);
+      // Flash the correct button(s) — for der/die nouns flash both
+      if (noun.article === 'der/die') {
+        buttonsRef?.flashCorrect('der');
+        buttonsRef?.flashCorrect('die');
+      } else {
+        buttonsRef?.flashCorrect(article);
+      }
 
       // Only count as clean correct if no wrong guesses on this word
       const wasClean = wrongGuesses.length === 0;
@@ -132,6 +138,10 @@
       newUnlockKey = checkUnlock(history, unlockedRuleKeys, unlockOrder, settings.unlockWindow, settings.unlockThreshold);
       if (newUnlockKey) {
         unlockedRuleKeys = [...unlockedRuleKeys, newUnlockKey];
+        // Auto-enable the newly unlocked rule when per-rule filtering is active
+        if (settings.enabledRules) {
+          settings = { ...settings, enabledRules: { ...settings.enabledRules, [newUnlockKey]: true } };
+        }
         stakeCount = 0;
         history = [];
         persist();
@@ -185,6 +195,13 @@
   function handleSettingsChange(newSettings) {
     settings = newSettings;
     persist();
+    // If current word's rule is now disabled, pick a new one
+    if (currentNoun) {
+      const pool = getActivePool(ruleGroups, unlockedRuleKeys, newSettings.enabledTypes, newSettings.enabledRules);
+      if (!pool.some(n => n.word === currentNoun.word)) {
+        nextWord();
+      }
+    }
   }
 
   function handleClearCache() {
@@ -306,6 +323,8 @@
   visible={showSettings}
   {settings}
   {ruleGroups}
+  {unlockOrder}
+  {unlockedRuleKeys}
   onClose={handleCloseSettings}
   onChange={handleSettingsChange}
   onClearCache={handleClearCache}

@@ -2,6 +2,12 @@
   import { articleColor } from './gameLogic.js';
 
   let { visible, noun, onTryAgain, onSkip } = $props();
+
+  let correctLabel = $derived(
+    noun?.article === 'der/die'
+      ? `der or die ${noun.word}`
+      : noun ? `${noun.article} ${noun.word}` : ''
+  );
 </script>
 
 {#if visible && noun}
@@ -9,7 +15,7 @@
     <div class="feedback-title wrong">&#10007; Incorrect</div>
     <div class="feedback-explanation">
       The correct answer is
-      <strong style="color:{articleColor(noun.article)}">{noun.article} {noun.word}</strong>
+      <strong style="color:{articleColor(noun.article)}">{correctLabel}</strong>
       <br><br>
       {noun.explanation}<br>
       <em>{noun.rule.notes}</em>

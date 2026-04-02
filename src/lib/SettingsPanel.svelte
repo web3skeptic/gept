@@ -1,7 +1,7 @@
 <script>
   import { DEFAULT_UNLOCK_WINDOW, DEFAULT_UNLOCK_THRESHOLD } from './gameLogic.js';
 
-  let { visible, settings, ruleGroups, onClose, onChange, onClearCache } = $props();
+  let { visible, settings, ruleGroups, unlockOrder, unlockedRuleKeys, onClose, onChange, onClearCache } = $props();
 
   const CATEGORY_LABELS = {
     suffix: 'Suffix rules',
@@ -9,11 +9,92 @@
     exception: 'Exceptions',
   };
 
+  const CATEGORY_TYPES = ['suffix', 'semantic', 'exception'];
+
+  let expandedCategories = $state({ suffix: false, semantic: false, exception: false });
+
+  /** Unlocked rules grouped by category, preserving unlock order */
+  let categoryRules = $derived.by(() => {
+    const result = { suffix: [], semantic: [], exception: [] };
+    for (const rk of unlockOrder) {
+      if (!unlockedRuleKeys.includes(rk)) continue;
+      const g = ruleGroups[rk];
+      if (g && result[g.type]) {
+        result[g.type].push(g);
+      }
+    }
+    return result;
+  });
+
+  /** Whether a specific rule is enabled */
+  function isRuleEnabled(ruleKey) {
+    if (settings.enabledRules === null || settings.enabledRules === undefined) return true;
+    return !!settings.enabledRules[ruleKey];
+  }
+
+  /** Count enabled rules for a category */
   let categoryCounts = $derived.by(() => {
-    const counts = { suffix: 0, semantic: 0, exception: 0 };
-    Object.values(ruleGroups).forEach(g => { if (counts[g.type] !== undefined) counts[g.type]++; });
+    const counts = {};
+    for (const type of CATEGORY_TYPES) {
+      const rules = categoryRules[type];
+      const total = rules.length;
+      const enabled = rules.filter(g => isRuleEnabled(g.ruleKey)).length;
+      counts[type] = { enabled, total };
+    }
     return counts;
   });
+
+  /** Whether all rules in a category are enabled */
+  function isCategoryAllEnabled(type) {
+    const rules = categoryRules[type];
+    if (rules.length === 0) return false;
+    return rules.every(g => isRuleEnabled(g.ruleKey));
+  }
+
+  /** Build explicit enabledRules object from current state (all unlocked rules) */
+  function buildExplicitRules() {
+    if (settings.enabledRules) return { ...settings.enabledRules };
+    const obj = {};
+    for (const rk of unlockedRuleKeys) {
+      obj[rk] = true;
+    }
+    return obj;
+  }
+
+  /** Count total enabled rules across all categories */
+  function countAllEnabled(rulesObj) {
+    return Object.values(rulesObj).filter(Boolean).length;
+  }
+
+  function toggleCategory(type) {
+    expandedCategories[type] = !expandedCategories[type];
+  }
+
+  function toggleCategoryAll(type) {
+    const rules = categoryRules[type];
+    if (rules.length === 0) return;
+    const allOn = isCategoryAllEnabled(type);
+    const next = buildExplicitRules();
+    for (const g of rules) {
+      next[g.ruleKey] = !allOn;
+    }
+    // Prevent disabling all rules
+    if (countAllEnabled(next) === 0) return;
+    onChange({ ...settings, enabledRules: next });
+  }
+
+  function toggleRule(ruleKey) {
+    const next = buildExplicitRules();
+    next[ruleKey] = !next[ruleKey];
+    // Prevent disabling all rules
+    if (countAllEnabled(next) === 0) return;
+    onChange({ ...settings, enabledRules: next });
+  }
+
+  function formatRuleKey(g) {
+    if (g.type === 'suffix') return g.key;
+    return g.key.replace(/_/g, ' ');
+  }
 
   function handleBackdropClick(e) {
     if (e.target === e.currentTarget) onClose();
@@ -35,13 +116,6 @@
 
   function toggleDarkMode() {
     onChange({ ...settings, darkMode: !settings.darkMode });
-  }
-
-  function toggleType(type) {
-    const next = { ...settings.enabledTypes, [type]: !settings.enabledTypes[type] };
-    // prevent disabling all categories
-    if (!Object.values(next).some(Boolean)) return;
-    onChange({ ...settings, enabledTypes: next });
   }
 </script>
 
@@ -126,30 +200,60 @@
         </div>
       </div>
 
-      <div class="section-title">Practice categories</div>
-      {#each Object.keys(CATEGORY_LABELS) as type}
-        <div class="setting-row">
-          <div class="setting-label">
-            <span class="setting-name">{CATEGORY_LABELS[type]}</span>
-            <span class="setting-desc">{categoryCounts[type]} rules</span>
-          </div>
-          <div class="setting-control">
-            <button
-              class="toggle"
-              class:on={settings.enabledTypes[type]}
-              onclick={() => toggleType(type)}
-              aria-label="Toggle {CATEGORY_LABELS[type]}"
-            >
-              <span class="toggle-knob"></span>
-            </button>
-          </div>
-        </div>
-      {/each}
+      <div class="section-title">Practice rules</div>
+
+      <div class="categories-scroll">
+        {#each CATEGORY_TYPES as type (type)}
+          {@const rules = categoryRules[type]}
+          {@const counts = categoryCounts[type]}
+          {#if counts.total > 0}
+            <div class="category-section">
+              <!-- svelte-ignore a11y_click_events_have_key_events -->
+              <!-- svelte-ignore a11y_no_static_element_interactions -->
+              <div class="category-header" onclick={() => toggleCategory(type)}>
+                <span class="chevron" class:expanded={expandedCategories[type]}>&#9656;</span>
+                <div class="category-info">
+                  <span class="setting-name">{CATEGORY_LABELS[type]}</span>
+                  <span class="setting-desc">{counts.enabled}/{counts.total} enabled</span>
+                </div>
+                <button
+                  class="toggle toggle-sm"
+                  class:on={isCategoryAllEnabled(type)}
+                  onclick={(e) => { e.stopPropagation(); toggleCategoryAll(type); }}
+                  aria-label="Toggle all {CATEGORY_LABELS[type]}"
+                >
+                  <span class="toggle-knob"></span>
+                </button>
+              </div>
+
+              {#if expandedCategories[type]}
+                <div class="rule-list">
+                  {#each rules as rule (rule.ruleKey)}
+                    <div class="rule-item">
+                      <button
+                        class="toggle toggle-xs"
+                        class:on={isRuleEnabled(rule.ruleKey)}
+                        onclick={() => toggleRule(rule.ruleKey)}
+                        aria-label="Toggle {rule.key}"
+                      >
+                        <span class="toggle-knob"></span>
+                      </button>
+                      <span class="rule-name">{formatRuleKey(rule)}</span>
+                      <span class="rule-article {rule.article}">{rule.article}</span>
+                      <span class="rule-count">{rule.nouns.length}</span>
+                    </div>
+                  {/each}
+                </div>
+              {/if}
+            </div>
+          {/if}
+        {/each}
+      </div>
 
       <div class="defaults-row">
         <button
           class="btn-defaults"
-          onclick={() => onChange({ ...settings, unlockWindow: DEFAULT_UNLOCK_WINDOW, unlockThreshold: DEFAULT_UNLOCK_THRESHOLD })}
+          onclick={() => onChange({ ...settings, unlockWindow: DEFAULT_UNLOCK_WINDOW, unlockThreshold: DEFAULT_UNLOCK_THRESHOLD, enabledRules: null })}
         >Reset to defaults</button>
         <button class="btn-clear" onclick={onClearCache}>Clear progress</button>
       </div>
@@ -180,6 +284,8 @@
     padding: 28px 24px;
     max-width: 400px;
     width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0,0,0,0.2);
     animation: popIn 0.3s ease-out;
   }
@@ -315,6 +421,7 @@
     margin-top: 4px;
   }
 
+  /* Toggle — standard size */
   .toggle {
     width: 48px;
     height: 26px;
@@ -341,4 +448,119 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.2);
   }
   .toggle.on .toggle-knob { transform: translateX(22px); }
+
+  /* Toggle — small (category header) */
+  .toggle.toggle-sm {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+  }
+  .toggle.toggle-sm .toggle-knob {
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+  }
+  .toggle.toggle-sm.on .toggle-knob { transform: translateX(18px); }
+
+  /* Toggle — extra small (rule item) */
+  .toggle.toggle-xs {
+    width: 32px;
+    height: 18px;
+    border-radius: 9px;
+  }
+  .toggle.toggle-xs .toggle-knob {
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+  }
+  .toggle.toggle-xs.on .toggle-knob { transform: translateX(14px); }
+
+  /* Category accordion */
+  .categories-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    margin: 4px 0;
+  }
+  .category-section {
+    border-bottom: 1px solid var(--border);
+  }
+  .category-section:last-child {
+    border-bottom: none;
+  }
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    cursor: pointer;
+    user-select: none;
+  }
+  .category-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  .chevron {
+    font-size: 0.8rem;
+    color: var(--text-tertiary);
+    transition: transform 0.2s ease;
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .chevron.expanded {
+    transform: rotate(90deg);
+  }
+
+  /* Rule list inside expanded category */
+  .rule-list {
+    padding: 0 0 8px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    animation: slideDown 0.2s ease-out;
+  }
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .rule-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 0.8rem;
+  }
+  .rule-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .rule-article {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .rule-article.der { background: var(--der-bg); color: var(--der-dark); }
+  .rule-article.die { background: var(--die-bg); color: var(--die-dark); }
+  .rule-article.das { background: var(--das-bg); color: var(--das-dark); }
+  .rule-count {
+    font-size: 0.7rem;
+    color: var(--text-tertiary);
+    min-width: 20px;
+    text-align: right;
+    flex-shrink: 0;
+  }
 </style>

@@ -36,12 +36,12 @@ export function buildRuleGroups(nouns) {
  * the rules are already sorted by noun count descending.
  */
 function interleaveByGender(rules) {
-  const buckets = { der: [], die: [], das: [] };
+  const buckets = { der: [], die: [], das: [], 'der/die': [] };
   rules.forEach(g => buckets[g.article]?.push(g));
   const result = [];
   while (true) {
     let added = false;
-    for (const article of ['der', 'die', 'das']) {
+    for (const article of ['der', 'die', 'das', 'der/die']) {
       if (buckets[article].length > 0) {
         result.push(buckets[article].shift());
         added = true;
@@ -81,14 +81,21 @@ export function buildUnlockOrder(ruleGroups) {
 
 /**
  * Get the active noun pool from unlocked rule keys.
+ * enabledRules is an optional object { [ruleKey]: boolean }.
+ * When provided, only rules explicitly set to true are included.
+ * When absent/null, falls back to enabledTypes filtering.
  */
-export function getActivePool(ruleGroups, unlockedRuleKeys, enabledTypes = null) {
+export function getActivePool(ruleGroups, unlockedRuleKeys, enabledTypes = null, enabledRules = null) {
   const pool = [];
   unlockedRuleKeys.forEach(rk => {
     const group = ruleGroups[rk];
-    if (group && (!enabledTypes || enabledTypes[group.type])) {
-      group.nouns.forEach(n => pool.push(n));
+    if (!group) return;
+    if (enabledRules) {
+      if (!enabledRules[rk]) return;
+    } else if (enabledTypes && !enabledTypes[group.type]) {
+      return;
     }
+    group.nouns.forEach(n => pool.push(n));
   });
   return pool;
 }
@@ -255,8 +262,21 @@ export function formatUnlockKey(group) {
 }
 
 /**
+ * Returns true if the player's guess is correct for the given noun.
+ * Nouns with article "der/die" accept both "der" and "die".
+ */
+export function isCorrectArticle(guess, noun) {
+  if (noun.article === 'der/die') return guess === 'der' || guess === 'die';
+  return guess === noun.article;
+}
+
+/**
  * Get CSS color variable for an article.
  */
 export function articleColor(article) {
-  return article === 'der' ? 'var(--der-dark)' : article === 'die' ? 'var(--die-dark)' : 'var(--das-dark)';
+  if (article === 'der') return 'var(--der-dark)';
+  if (article === 'die') return 'var(--die-dark)';
+  if (article === 'das') return 'var(--das-dark)';
+  // der/die — use a neutral purple
+  return 'var(--primary)';
 }
